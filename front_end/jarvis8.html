@@ -1,0 +1,3604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WhatIf — Financial Intelligence</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* =========================================================
+   WHATIF PRO — BLACK + LIGHT RED DESIGN SYSTEM
+========================================================= */
+
+:root {
+    --black: #000000;
+    --black-soft: #050505;
+    --black-card: #090909;
+    --black-card-2: #0d0d0d;
+
+    --red: #ff5c5c;
+    --red-light: #ff7777;
+    --red-bright: #ff3b3b;
+    --red-dark: #7a1818;
+    --red-soft: rgba(255,92,92,0.10);
+    --red-glow: rgba(255,92,92,0.20);
+
+    --white: #ffffff;
+    --text: #eeeeee;
+    --muted: #777777;
+    --muted-light: #aaaaaa;
+
+    --border: rgba(255,92,92,0.16);
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: var(--black);
+    color: var(--text);
+
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+button,
+input {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* =========================================================
+   GLOBAL RED ATMOSPHERE
+========================================================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -5;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,92,92,0.09),
+            transparent 35%
+        ),
+
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(255,40,40,0.05),
+            transparent 30%
+        );
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -4;
+
+    opacity: 0.25;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.018) 1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.018) 1px,
+            transparent 1px
+        );
+
+    background-size: 70px 70px;
+}
+
+/* =========================================================
+   SPLASH SCREEN
+========================================================= */
+
+#splashScreen {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background: #000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 99999;
+
+    opacity: 1;
+    visibility: visible;
+
+    transition:
+        opacity 0.8s ease,
+        visibility 0.8s ease;
+
+    overflow: hidden;
+}
+
+#splashScreen::before {
+    content: "";
+
+    position: absolute;
+
+    width: 500px;
+    height: 500px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,70,70,0.16),
+            transparent 65%
+        );
+
+    animation:
+        splashGlow 3s ease-in-out infinite;
+}
+
+#splashScreen.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.splash-content {
+    position: relative;
+    z-index: 2;
+
+    text-align: center;
+}
+
+.splash-logo {
+    width: 75px;
+    height: 75px;
+
+    margin: 0 auto 25px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(255,92,92,0.5);
+
+    border-radius: 22px;
+
+    color: var(--red-light);
+
+    font-size: 30px;
+
+    box-shadow:
+        0 0 40px
+        rgba(255,92,92,0.18),
+
+        inset 0 0 30px
+        rgba(255,92,92,0.06);
+
+    animation:
+        splashLogo 2s ease-in-out infinite;
+}
+
+.splash-content h1 {
+    font-size: 58px;
+
+    letter-spacing: -3px;
+
+    font-weight: 900;
+
+    color: white;
+}
+
+.splash-content h1 span {
+    color: var(--red);
+}
+
+.splash-content p {
+    margin-top: 10px;
+
+    color: #666;
+
+    font-size: 12px;
+
+    letter-spacing: 4px;
+
+    text-transform: uppercase;
+}
+
+.splash-loader {
+    width: 150px;
+    height: 2px;
+
+    background: #171717;
+
+    margin: 35px auto 0;
+
+    overflow: hidden;
+
+    position: relative;
+}
+
+.splash-loader::after {
+    content: "";
+
+    position: absolute;
+
+    left: -50%;
+    top: 0;
+
+    width: 50%;
+    height: 100%;
+
+    background: var(--red);
+
+    box-shadow:
+        0 0 15px var(--red);
+
+    animation:
+        splashLoading 1.2s
+        ease-in-out infinite;
+}
+
+@keyframes splashLoading {
+
+    0% {
+        left: -50%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes splashLogo {
+
+    0%,
+    100% {
+        transform:
+            scale(1)
+            rotate(0deg);
+    }
+
+    50% {
+        transform:
+            scale(1.08)
+            rotate(180deg);
+    }
+}
+
+@keyframes splashGlow {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* =========================================================
+   LOGIN SCREEN
+========================================================= */
+
+#loginScreen {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background: #000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 99998;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition:
+        opacity 0.6s ease,
+        visibility 0.6s ease;
+}
+
+#loginScreen.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.login-bg-circle {
+    position: absolute;
+
+    width: 600px;
+    height: 600px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(255,92,92,0.08);
+
+    animation:
+        loginOrbit 12s
+        linear infinite;
+}
+
+.login-bg-circle::before {
+    content: "";
+
+    position: absolute;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--red);
+
+    box-shadow:
+        0 0 20px var(--red);
+
+    top: 10%;
+    left: 50%;
+}
+
+.login-box {
+    width: 430px;
+
+    max-width:
+        calc(100% - 35px);
+
+    padding: 45px;
+
+    position: relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0c0c0c,
+            #050505
+        );
+
+    border:
+        1px solid
+        rgba(255,92,92,0.18);
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 40px 120px
+        rgba(0,0,0,0.8),
+
+        0 0 70px
+        rgba(255,70,70,0.06);
+
+    overflow: hidden;
+
+    animation:
+        loginEnter
+        0.8s
+        cubic-bezier(.2,.8,.2,1);
+}
+
+.login-box::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--red),
+            transparent
+        );
+
+    animation:
+        loginBeam 3s
+        linear infinite;
+}
+
+.login-logo {
+    width: 58px;
+    height: 58px;
+
+    margin:
+        0 auto 20px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+        1px solid
+        rgba(255,92,92,0.3);
+
+    border-radius: 17px;
+
+    color: var(--red);
+
+    font-size: 23px;
+
+    box-shadow:
+        0 0 30px
+        rgba(255,92,92,0.1);
+}
+
+.login-box h1 {
+    text-align: center;
+
+    color: white;
+
+    font-size: 28px;
+
+    letter-spacing: -1px;
+}
+
+.login-box h1 span {
+    color: var(--red);
+}
+
+.login-subtitle {
+    text-align: center;
+
+    color: #666;
+
+    font-size: 13px;
+
+    margin:
+        9px 0 32px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+
+    color: #999;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+
+    padding: 15px;
+
+    background: #080808;
+
+    border:
+        1px solid #222;
+
+    border-radius: 10px;
+
+    color: white;
+
+    outline: none;
+
+    transition:
+        border .3s ease,
+        box-shadow .3s ease,
+        transform .3s ease;
+}
+
+.input-group input:focus {
+    border-color: var(--red);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255,92,92,0.08),
+
+        0 0 25px
+        rgba(255,92,92,0.05);
+
+    transform:
+        translateY(-1px);
+}
+
+.input-group input::placeholder {
+    color: #444;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 65px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    right: 12px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    background: none;
+
+    border: none;
+
+    color: var(--red);
+
+    font-size: 11px;
+}
+
+.login-error {
+    min-height: 18px;
+
+    color: #ff6b6b;
+
+    font-size: 12px;
+
+    margin-bottom: 10px;
+}
+
+.login-btn {
+    width: 100%;
+
+    padding: 15px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff6b6b,
+            #ff3e3e
+        );
+
+    color: #080808;
+
+    font-size: 14px;
+
+    font-weight: 900;
+
+    position: relative;
+
+    overflow: hidden;
+
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease;
+}
+
+.login-btn::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -100%;
+
+    width: 70%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.35),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+}
+
+.login-btn:hover::before {
+    animation:
+        buttonSweep .7s ease;
+}
+
+.login-btn:hover {
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 15px 40px
+        rgba(255,70,70,0.2);
+}
+
+.login-note {
+    text-align: center;
+
+    color: #444;
+
+    font-size: 10px;
+
+    margin-top: 20px;
+}
+
+@keyframes loginEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(30px)
+            scale(.96);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+@keyframes loginBeam {
+
+    from {
+        transform:
+            translateX(-100%);
+    }
+
+    to {
+        transform:
+            translateX(100%);
+    }
+}
+
+@keyframes loginOrbit {
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+@keyframes buttonSweep {
+
+    from {
+        left: -100%;
+    }
+
+    to {
+        left: 140%;
+    }
+}
+
+/* =========================================================
+   AUTH LOCK
+========================================================= */
+
+body.auth-locked > nav,
+body.auth-locked > main,
+body.auth-locked > footer {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+body.authenticated > nav,
+body.authenticated > main,
+body.authenticated > footer {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.navbar {
+    height: 74px;
+
+    padding:
+        0 7%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 1000;
+
+    background:
+        rgba(0,0,0,0.78);
+
+    backdrop-filter:
+        blur(20px);
+
+    border-bottom:
+        1px solid
+        rgba(255,92,92,0.12);
+}
+
+.logo {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 20px;
+
+    font-weight: 900;
+}
+
+.logo-icon {
+    color: var(--red);
+
+    text-shadow:
+        0 0 20px
+        rgba(255,92,92,0.5);
+}
+
+.logo-highlight {
+    color: var(--red);
+}
+
+.nav-status {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #555;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+
+    background: var(--red);
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 10px
+        var(--red);
+
+    animation:
+        statusPulse 1.5s infinite;
+}
+
+@keyframes statusPulse {
+
+    50% {
+        opacity: .3;
+        transform: scale(.6);
+    }
+}
+
+/* =========================================================
+   MAIN DASHBOARD
+========================================================= */
+
+.dashboard {
+    min-height:
+        calc(100vh - 74px);
+
+    padding:
+        80px 7% 100px;
+
+    position: relative;
+}
+
+/* =========================================================
+   HERO INTRO
+========================================================= */
+
+.dashboard-intro {
+    max-width: 850px;
+
+    margin:
+        0 auto;
+
+    text-align: center;
+
+    animation:
+        dashboardEnter
+        1s
+        cubic-bezier(.2,.8,.2,1);
+}
+
+.dashboard-label {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--red);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 20px;
+}
+
+.dashboard-label::before,
+.dashboard-label::after {
+    content: "";
+
+    width: 25px;
+
+    height: 1px;
+
+    background:
+        rgba(255,92,92,.5);
+}
+
+.dashboard-intro h1 {
+    font-size:
+        clamp(
+            45px,
+            7vw,
+            82px
+        );
+
+    line-height: .95;
+
+    letter-spacing: -5px;
+
+    color: white;
+}
+
+.dashboard-intro h1 span {
+    color: var(--red);
+
+    text-shadow:
+        0 0 35px
+        rgba(255,92,92,0.16);
+}
+
+.dashboard-intro p {
+    max-width: 600px;
+
+    margin:
+        25px auto 0;
+
+    color: #666;
+
+    font-size: 14px;
+
+    line-height: 1.8;
+}
+
+/* =========================================================
+   ASSET SELECTOR
+========================================================= */
+
+.asset-selector {
+    max-width: 1050px;
+
+    margin:
+        80px auto 0;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 25px;
+}
+
+/* =========================================================
+   ASSET CARD
+========================================================= */
+
+.asset-card {
+    position: relative;
+
+    min-height: 280px;
+
+    padding: 35px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0b0b0b,
+            #050505
+        );
+
+    border:
+        1px solid
+        rgba(255,92,92,0.13);
+
+    border-radius: 24px;
+
+    overflow: hidden;
+
+    transition:
+        transform .5s
+            cubic-bezier(.2,.8,.2,1),
+
+        border-color .4s ease,
+
+        box-shadow .4s ease;
+
+    animation:
+        cardEnter
+        .8s
+        both;
+
+    text-align: left;
+
+    color: inherit;
+}
+
+.asset-card:nth-child(1) {
+    animation-delay: .15s;
+}
+
+.asset-card:nth-child(2) {
+    animation-delay: .25s;
+}
+
+.asset-card:nth-child(3) {
+    animation-delay: .35s;
+}
+
+.asset-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    border-radius: 50%;
+
+    right: -100px;
+    bottom: -100px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,92,92,.12),
+            transparent 65%
+        );
+
+    transition:
+        transform .6s ease;
+}
+
+.asset-card::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -120%;
+
+    width: 80%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,92,92,.05),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+}
+
+.asset-card:hover::after {
+    animation:
+        cardSweep .9s ease;
+}
+
+.asset-card:hover {
+    transform:
+        translateY(-12px);
+
+    border-color:
+        rgba(255,92,92,.45);
+
+    box-shadow:
+        0 25px 70px
+        rgba(0,0,0,.7),
+
+        0 0 40px
+        rgba(255,92,92,.07);
+}
+
+.asset-card:hover::before {
+    transform:
+        scale(1.5);
+}
+
+.asset-icon-large {
+    width: 76px;
+    height: 76px;
+
+    display: grid;
+
+    place-items: center;
+
+    border-radius: 22px;
+
+    background:
+        rgba(255,92,92,.06);
+
+    border:
+        1px solid
+        rgba(255,92,92,.2);
+
+    color: var(--red);
+
+    font-size: 28px;
+
+    font-weight: 900;
+
+    margin-bottom: 30px;
+
+    transition:
+        transform .5s ease,
+        box-shadow .5s ease;
+}
+
+.asset-card:hover
+.asset-icon-large {
+    transform:
+        rotate(-5deg)
+        scale(1.08);
+
+    box-shadow:
+        0 0 35px
+        rgba(255,92,92,.15);
+}
+
+.asset-card h2 {
+    font-size: 25px;
+
+    color: white;
+
+    margin-bottom: 7px;
+}
+
+.asset-card p {
+    color: #666;
+
+    font-size: 12px;
+}
+
+.asset-arrow {
+    position: absolute;
+
+    right: 30px;
+    bottom: 28px;
+
+    width: 38px;
+    height: 38px;
+
+    border:
+        1px solid
+        rgba(255,92,92,.2);
+
+    border-radius: 50%;
+
+    display: grid;
+
+    place-items: center;
+
+    color: var(--red);
+
+    transition:
+        transform .3s ease,
+        background .3s ease;
+}
+
+.asset-card:hover
+.asset-arrow {
+    transform:
+        translateX(5px);
+
+    background:
+        rgba(255,92,92,.1);
+}
+
+@keyframes cardSweep {
+
+    from {
+        left: -120%;
+    }
+
+    to {
+        left: 140%;
+    }
+}
+
+@keyframes cardEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+/* =========================================================
+   MARKET AFFAIRS
+========================================================= */
+
+.market-section {
+    max-width: 1050px;
+
+    margin:
+        100px auto 0;
+}
+
+.market-header {
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-end;
+
+    margin-bottom: 25px;
+}
+
+.market-header small {
+    color: var(--red);
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    font-weight: 800;
+}
+
+.market-header h2 {
+    margin-top: 8px;
+
+    font-size: 30px;
+
+    letter-spacing: -1px;
+}
+
+.market-live {
+    color: #555;
+
+    font-size: 10px;
+}
+
+.news-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 15px;
+}
+
+.news-card {
+    padding: 25px;
+
+    min-height: 190px;
+
+    background:
+        #070707;
+
+    border:
+        1px solid
+        rgba(255,92,92,.11);
+
+    border-radius: 16px;
+
+    transition:
+        transform .3s ease,
+        border-color .3s ease;
+}
+
+.news-card:hover {
+    transform:
+        translateY(-5px);
+
+    border-color:
+        rgba(255,92,92,.3);
+}
+
+.news-meta {
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    margin-bottom: 18px;
+}
+
+.news-tag {
+    color: var(--red);
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+    font-weight: 800;
+}
+
+.news-time {
+    color: #444;
+
+    font-size: 9px;
+}
+
+.news-card h3 {
+    color: #ddd;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+.news-card p {
+    color: #666;
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+    margin-top: 10px;
+}
+
+.news-line {
+    width: 35px;
+
+    height: 2px;
+
+    background:
+        var(--red);
+
+    margin-top: 20px;
+}
+
+/* =========================================================
+   MARKET TICKER
+========================================================= */
+
+.market-ticker {
+    margin-top: 60px;
+
+    height: 55px;
+
+    border-top:
+        1px solid
+        rgba(255,92,92,.1);
+
+    border-bottom:
+        1px solid
+        rgba(255,92,92,.1);
+
+    overflow: hidden;
+
+    display: flex;
+
+    align-items: center;
+
+    background:
+        rgba(255,92,92,.015);
+}
+
+.ticker-track {
+    display: flex;
+
+    gap: 70px;
+
+    width: max-content;
+
+    animation:
+        tickerMove
+        25s
+        linear infinite;
+}
+
+.ticker-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+}
+
+.ticker-symbol {
+    color: #aaa;
+
+    font-weight: 800;
+}
+
+.ticker-value {
+    color: white;
+}
+
+.ticker-change {
+    color: var(--red);
+}
+
+@keyframes tickerMove {
+
+    from {
+        transform:
+            translateX(0);
+    }
+
+    to {
+        transform:
+            translateX(-50%);
+    }
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.dashboard-footer {
+    text-align: center;
+
+    margin-top: 100px;
+
+    color: #3e3e3e;
+
+    font-size: 10px;
+}
+
+.dashboard-footer span {
+    color:
+        rgba(255,92,92,.55);
+}
+
+/* =========================================================
+   DASHBOARD ENTRY
+========================================================= */
+
+@keyframes dashboardEnter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+/* =========================================================
+   =========================================================
+   NEW ASSET EXPERIENCE PAGE
+   =========================================================
+========================================================= */
+
+#assetPage {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    background:
+        linear-gradient(
+            180deg,
+            #000000 0%,
+            #070707 100%
+        );
+
+    color:
+        #f3f3f3;
+
+    z-index: 99997;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    overflow-y: auto;
+
+    transition:
+        opacity .55s ease,
+        visibility .55s ease;
+}
+
+#assetPage.show {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   ASSET PAGE CONTAINER
+========================================================= */
+
+.asset-page-container {
+
+    width: 100%;
+
+    max-width: 1450px;
+
+    margin: 0 auto;
+
+    padding:
+        55px 5% 90px;
+}
+
+
+/* =========================================================
+   ASSET PAGE TOP
+========================================================= */
+
+.asset-page-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+        space-between;
+
+    margin-bottom: 65px;
+}
+
+.asset-back {
+
+    border: none;
+
+    background: transparent;
+
+    color: #d7d7d7;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 10px 0;
+
+    transition:
+        color .3s ease,
+        transform .3s ease;
+}
+
+.asset-back:hover {
+
+    color: var(--red);
+
+    transform:
+        translateX(-5px);
+}
+
+.asset-page-name {
+
+    color: #bcbcbc;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    text-transform:
+        uppercase;
+}
+
+
+/* =========================================================
+   ASSET PAGE HERO
+========================================================= */
+
+.asset-page-hero {
+
+    text-align: center;
+
+    max-width: 1000px;
+
+    margin:
+        0 auto 70px;
+
+    animation:
+        assetHeroEnter
+        .7s
+        cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes assetHeroEnter {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(25px);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   ASSET ICON
+========================================================= */
+
+.asset-page-icon {
+
+    width: 68px;
+
+    height: 68px;
+
+    margin:
+        0 auto 25px;
+
+    border-radius: 18px;
+
+    display: grid;
+
+    place-items: center;
+
+    background:
+        #eef2ff;
+
+    color:
+        #5368c9;
+
+    font-size: 27px;
+
+    font-weight: 900;
+
+    box-shadow:
+        0 10px 35px
+        rgba(0,0,0,.06);
+
+    animation:
+        assetIconFloat
+        3s
+        ease-in-out infinite;
+}
+
+@keyframes assetIconFloat {
+
+    0%,
+    100% {
+
+        transform:
+            translateY(0);
+    }
+
+    50% {
+
+        transform:
+            translateY(-5px);
+    }
+}
+
+
+/* =========================================================
+   ASSET PAGE TITLE
+========================================================= */
+
+.asset-page-hero h1 {
+
+    font-size:
+        clamp(
+            38px,
+            5vw,
+            64px
+        );
+
+    line-height:
+        1.05;
+
+    letter-spacing:
+        -3px;
+
+    font-weight:
+        800;
+
+    color:
+        #ffffff;
+}
+
+.asset-page-hero h1 span {
+
+    display: block;
+
+    color:
+        var(--red);
+}
+
+.asset-page-hero p {
+
+    max-width:
+        680px;
+
+    margin:
+        22px auto 0;
+
+    color:
+        #a4a4a4;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.8;
+}
+
+
+/* =========================================================
+   FOUR FEATURE CARDS
+========================================================= */
+
+.asset-features {
+
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 22px;
+
+    animation:
+        featureCardsEnter
+        .8s
+        .15s
+        both;
+}
+
+@keyframes featureCardsEnter {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(35px);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   FEATURE CARD
+========================================================= */
+
+.asset-feature-card {
+
+    min-height:
+        285px;
+
+    padding:
+        34px 30px;
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            #0d0d0d,
+            #090909
+        );
+
+    border:
+        1px solid
+        rgba(255,92,92,0.15);
+
+    border-radius:
+        18px;
+
+    text-align:
+        left;
+
+    color:
+        #f2f2f2;
+
+    transition:
+        transform .4s
+        cubic-bezier(.2,.8,.2,1),
+
+        box-shadow .4s ease,
+
+        border-color .4s ease;
+}
+
+.asset-feature-card::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    width:
+        180px;
+
+    height:
+        180px;
+
+    border-radius:
+        50%;
+
+    right:
+        -95px;
+
+    bottom:
+        -95px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(83,104,201,.12),
+            transparent 68%
+        );
+
+    transition:
+        transform .5s ease;
+}
+
+.asset-feature-card::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    left:
+        -130%;
+
+    top:
+        0;
+
+    width:
+        80%;
+
+    height:
+        100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(83,104,201,.035),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+}
+
+.asset-feature-card:hover {
+
+    transform:
+        translateY(-10px);
+
+    border-color:
+        rgba(255,92,92,0.38);
+
+    box-shadow:
+        0 25px 55px
+        rgba(0,0,0,.45),
+        0 0 35px rgba(255,92,92,.08);
+}
+
+.asset-feature-card:hover::before {
+
+    transform:
+        scale(1.5);
+}
+
+.asset-feature-card:hover::after {
+
+    animation:
+        featureSweep
+        .8s
+        ease;
+}
+
+@keyframes featureSweep {
+
+    from {
+        left: -130%;
+    }
+
+    to {
+        left: 140%;
+    }
+}
+
+
+/* =========================================================
+   FEATURE ICON
+========================================================= */
+
+.asset-feature-icon {
+
+    width:
+        58px;
+
+    height:
+        58px;
+
+    border-radius:
+        16px;
+
+    background:
+        rgba(255,92,92,0.08);
+
+    border:
+        1px solid
+        rgba(255,92,92,0.18);
+
+    display:
+        grid;
+
+    place-items:
+        center;
+
+    font-size:
+        25px;
+
+    margin-bottom:
+        28px;
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    transition:
+        transform .4s ease,
+        box-shadow .4s ease;
+}
+
+.asset-feature-card:hover
+.asset-feature-icon {
+
+    transform:
+        scale(1.08)
+        rotate(-4deg);
+
+    box-shadow:
+        0 10px 30px
+        rgba(83,104,201,.12);
+}
+
+
+/* =========================================================
+   FEATURE TITLE
+========================================================= */
+
+.asset-feature-card h2 {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    color:
+        #ffffff;
+
+    font-size:
+        19px;
+
+    line-height:
+        1.3;
+
+    margin-bottom:
+        12px;
+}
+
+
+/* =========================================================
+   FEATURE DESCRIPTION
+========================================================= */
+
+.asset-feature-card p {
+
+    position:
+        relative;
+
+    z-index:
+        2;
+
+    color:
+        #b3b3b3;
+
+    font-size:
+        12px;
+
+    line-height:
+        1.75;
+
+    max-width:
+        240px;
+}
+
+
+/* =========================================================
+   FEATURE ARROW
+========================================================= */
+
+.asset-feature-arrow {
+
+    position:
+        absolute;
+
+    right:
+        24px;
+
+    bottom:
+        23px;
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+    border:
+        1px solid
+        rgba(255,92,92,0.2);
+
+    border-radius:
+        50%;
+
+    display:
+        grid;
+
+    place-items:
+        center;
+
+    color:
+        var(--red);
+
+    font-size:
+        15px;
+
+    z-index:
+        3;
+
+    transition:
+        transform .3s ease,
+        background .3s ease,
+        color .3s ease;
+}
+
+.asset-feature-card:hover
+.asset-feature-arrow {
+
+    transform:
+        translateX(5px);
+
+    background:
+        rgba(255,92,92,0.08);
+
+    color:
+        var(--red);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .asset-features {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+
+    .asset-selector {
+
+        grid-template-columns:
+            1fr;
+
+        max-width:
+            500px;
+    }
+
+    .news-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .dashboard {
+
+        padding:
+            60px 5% 80px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .navbar {
+
+        padding:
+            0 5%;
+    }
+
+    .nav-status {
+
+        display:
+            none;
+    }
+
+    .dashboard-intro h1 {
+
+        font-size:
+            48px;
+
+        letter-spacing:
+            -3px;
+    }
+
+    .asset-card {
+
+        min-height:
+            240px;
+
+        padding:
+            28px;
+    }
+
+    .market-header {
+
+        display:
+            block;
+    }
+
+    .market-live {
+
+        display:
+            block;
+
+        margin-top:
+            8px;
+    }
+
+    .login-box {
+
+        padding:
+            35px 25px;
+    }
+
+    .asset-page-container {
+
+        padding:
+            35px 5% 70px;
+    }
+
+    .asset-page-top {
+
+        margin-bottom:
+            45px;
+    }
+
+    .asset-page-hero {
+
+        margin-bottom:
+            50px;
+    }
+
+    .asset-page-hero h1 {
+
+        font-size:
+            39px;
+
+        letter-spacing:
+            -2px;
+    }
+
+    .asset-features {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .asset-feature-card {
+
+        min-height:
+            245px;
+
+        padding:
+            30px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        scroll-behavior:
+            auto !important;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body class="auth-locked">
+
+
+<!-- =========================================================
+     SPLASH SCREEN
+========================================================= -->
+
+<div id="splashScreen">
+
+    <div class="splash-content">
+
+        <div class="splash-logo">
+            ◆
+        </div>
+
+        <h1>
+            What<span>If</span>
+        </h1>
+
+        <p>
+            Financial Intelligence
+        </p>
+
+        <div class="splash-loader"></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     LOGIN SCREEN
+========================================================= -->
+
+<div id="loginScreen">
+
+    <div class="login-bg-circle"></div>
+
+    <div class="login-box">
+
+        <div class="login-logo">
+            ◆
+        </div>
+
+        <h1>
+            Welcome to <span>WhatIf</span>
+        </h1>
+
+        <p class="login-subtitle">
+            Explore market history differently.
+        </p>
+
+
+        <form id="loginForm">
+
+
+            <div class="input-group">
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="loginPassword">
+                    Password
+                </label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        id="togglePassword"
+                        class="password-toggle"
+                    >
+                        Show
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <p
+                id="loginError"
+                class="login-error"
+            ></p>
+
+
+            <button
+                type="submit"
+                class="login-btn"
+            >
+                Enter WhatIf
+            </button>
+
+        </form>
+
+
+        <p class="login-note">
+            Educational market intelligence interface
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav class="navbar">
+
+    <div class="logo">
+
+        <span class="logo-icon">
+            ◆
+        </span>
+
+        <span>
+            What<span class="logo-highlight">If</span>
+        </span>
+
+    </div>
+
+
+    <div class="nav-status">
+
+        <span class="status-dot"></span>
+
+        MARKET INTELLIGENCE ONLINE
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================================
+     MAIN DASHBOARD
+========================================================= -->
+
+<main>
+
+<section class="dashboard">
+
+
+    <!-- =====================================================
+         INTRO
+    ====================================================== -->
+
+    <div class="dashboard-intro">
+
+        <div class="dashboard-label">
+            EXPLORE THE MARKET
+        </div>
+
+        <h1>
+            Choose your
+            <span>asset.</span>
+        </h1>
+
+        <p>
+            Select an asset to explore its historical
+            performance, market movements, financial
+            signals and quantitative finance tools.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         THREE ASSET OPTIONS
+    ====================================================== -->
+
+    <div class="asset-selector">
+
+
+        <!-- BITCOIN -->
+
+        <button
+            type="button"
+            class="asset-card"
+            onclick="openAsset('bitcoin')"
+        >
+
+            <div class="asset-icon-large">
+                ₿
+            </div>
+
+            <h2>
+                Bitcoin
+            </h2>
+
+            <p>
+                Cryptocurrency
+                · BTC
+            </p>
+
+            <div class="asset-arrow">
+                →
+            </div>
+
+        </button>
+
+
+        <!-- NVIDIA -->
+
+        <button
+            type="button"
+            class="asset-card"
+            onclick="openAsset('nvidia')"
+        >
+
+            <div class="asset-icon-large">
+                N
+            </div>
+
+            <h2>
+                NVIDIA
+            </h2>
+
+            <p>
+                Technology Stock
+                · NVDA
+            </p>
+
+            <div class="asset-arrow">
+                →
+            </div>
+
+        </button>
+
+
+        <!-- GOLD -->
+
+        <button
+            type="button"
+            class="asset-card"
+            onclick="openAsset('gold')"
+        >
+
+            <div class="asset-icon-large">
+                Au
+            </div>
+
+            <h2>
+                Gold
+            </h2>
+
+            <p>
+                Precious Metal
+                · XAU
+            </p>
+
+            <div class="asset-arrow">
+                →
+            </div>
+
+        </button>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         MARKET AFFAIRS
+    ====================================================== -->
+
+    <section class="market-section">
+
+
+        <div class="market-header">
+
+            <div>
+
+                <small>
+                    MARKET AFFAIRS
+                </small>
+
+                <h2>
+                    What's moving the market?
+                </h2>
+
+            </div>
+
+            <div class="market-live">
+                UPDATED · 19 SEP 2026
+            </div>
+
+        </div>
+
+
+        <div class="news-grid">
+
+
+            <!-- BITCOIN NEWS -->
+
+            <article class="news-card">
+
+                <div class="news-meta">
+
+                    <span class="news-tag">
+                        BITCOIN
+                    </span>
+
+                    <span class="news-time">
+                        TODAY
+                    </span>
+
+                </div>
+
+                <h3>
+                    Bitcoin moves back above
+                    the ₹77 lakh level.
+                </h3>
+
+                <p>
+                    Bitcoin was trading around
+                    ₹77.8 lakh on September 19,
+                    with the cryptocurrency gaining
+                    more than 4% over 24 hours.
+                </p>
+
+                <div class="news-line"></div>
+
+            </article>
+
+
+            <!-- NVIDIA NEWS -->
+
+            <article class="news-card">
+
+                <div class="news-meta">
+
+                    <span class="news-tag">
+                        NVIDIA
+                    </span>
+
+                    <span class="news-time">
+                        TODAY
+                    </span>
+
+                </div>
+
+                <h3>
+                    AI demand remains a major
+                    focus for semiconductor markets.
+                </h3>
+
+                <p>
+                    NVIDIA CEO Jensen Huang has
+                    continued to argue for rapid AI
+                    development while industry debate
+                    around AI safety continues.
+                </p>
+
+                <div class="news-line"></div>
+
+            </article>
+
+
+            <!-- GOLD NEWS -->
+
+            <article class="news-card">
+
+                <div class="news-meta">
+
+                    <span class="news-tag">
+                        GOLD
+                    </span>
+
+                    <span class="news-time">
+                        18 SEP
+                    </span>
+
+                </div>
+
+                <h3>
+                    Gold reaches a one-week high
+                    as oil prices ease.
+                </h3>
+
+                <p>
+                    Spot gold rose to around
+                    $4,390 per ounce as easing oil
+                    prices reduced some inflation
+                    concerns.
+                </p>
+
+                <div class="news-line"></div>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         MARKET TICKER
+    ====================================================== -->
+
+    <div class="market-ticker">
+
+        <div class="ticker-track">
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    BTC
+                </span>
+
+                <span class="ticker-value">
+                    ₹77.8L
+                </span>
+
+                <span class="ticker-change">
+                    +4.9%
+                </span>
+
+            </div>
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    GOLD
+                </span>
+
+                <span class="ticker-value">
+                    $4,390/oz
+                </span>
+
+                <span class="ticker-change">
+                    +1.2%
+                </span>
+
+            </div>
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    NIFTY 50
+                </span>
+
+                <span class="ticker-value">
+                    23,270.60
+                </span>
+
+                <span class="ticker-change">
+                    +0.23%
+                </span>
+
+            </div>
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    SENSEX
+                </span>
+
+                <span class="ticker-value">
+                    74,314.59
+                </span>
+
+                <span class="ticker-change">
+                    -0.03%
+                </span>
+
+            </div>
+
+
+            <!-- DUPLICATE -->
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    BTC
+                </span>
+
+                <span class="ticker-value">
+                    ₹77.8L
+                </span>
+
+                <span class="ticker-change">
+                    +4.9%
+                </span>
+
+            </div>
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    GOLD
+                </span>
+
+                <span class="ticker-value">
+                    $4,390/oz
+                </span>
+
+                <span class="ticker-change">
+                    +1.2%
+                </span>
+
+            </div>
+
+
+            <div class="ticker-item">
+
+                <span class="ticker-symbol">
+                    NIFTY 50
+                </span>
+
+                <span class="ticker-value">
+                    23,270.60
+                </span>
+
+                <span class="ticker-change">
+                    +0.23%
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="dashboard-footer">
+
+        WHATIF ·
+        Financial What-If Machine
+        · <span>Educational Use</span>
+
+    </div>
+
+
+</section>
+
+</main>
+
+
+<!-- =========================================================
+     NEW ASSET EXPERIENCE PAGE
+========================================================= -->
+
+<div id="assetPage">
+
+
+    <div class="asset-page-container">
+
+
+        <!-- TOP -->
+
+        <div class="asset-page-top">
+
+
+            <button
+                type="button"
+                class="asset-back"
+                onclick="closeAssetPage()"
+            >
+
+                ← Back to assets
+
+            </button>
+
+
+            <div
+                class="asset-page-name"
+                id="assetPageName"
+            >
+                BITCOIN · BTC
+            </div>
+
+
+        </div>
+
+
+        <!-- HERO -->
+
+        <div class="asset-page-hero">
+
+
+            <div
+                class="asset-page-icon"
+                id="assetPageIcon"
+            >
+                ₿
+            </div>
+
+
+            <h1>
+                Everything you need to explore
+                <span>quantitative finance.</span>
+            </h1>
+
+
+            <p id="assetPageDescription">
+
+                Explore market data, strategies,
+                risk and financial concepts through
+                an interactive quantitative finance
+                experience.
+
+            </p>
+
+
+        </div>
+
+
+        <!-- =================================================
+             EXACTLY FOUR FEATURE CARDS
+        ================================================== -->
+
+        <div class="asset-features">
+
+
+            <!-- 1. MARKET ANALYSIS -->
+
+            <button
+                type="button"
+                class="asset-feature-card"
+                onclick="openFeature('analysis')"
+            >
+
+                <div class="asset-feature-icon">
+                    📈
+                </div>
+
+                <h2>
+                    Market Analysis
+                </h2>
+
+                <p>
+
+                    Analyze historical
+                    <span id="analysisAsset">
+                        Bitcoin
+                    </span>
+                    market data using
+                    quantitative indicators.
+
+                </p>
+
+                <div class="asset-feature-arrow">
+                    →
+                </div>
+
+            </button>
+
+
+            <!-- 2. STRATEGY BACKTESTING -->
+
+            <button
+                type="button"
+                class="asset-feature-card"
+                onclick="openFeature('backtesting')"
+            >
+
+                <div class="asset-feature-icon">
+                    🚀
+                </div>
+
+                <h2>
+                    Strategy Backtesting
+                </h2>
+
+                <p>
+
+                    Test SMA, EMA, momentum
+                    and mean-reversion
+                    strategies using historical
+                    data.
+
+                </p>
+
+                <div class="asset-feature-arrow">
+                    →
+                </div>
+
+            </button>
+
+
+            <!-- 3. RISK ANALYSIS -->
+
+            <button
+                type="button"
+                class="asset-feature-card"
+                onclick="openFeature('risk')"
+            >
+
+                <div class="asset-feature-icon">
+                    🛡️
+                </div>
+
+                <h2>
+                    Risk Analysis
+                </h2>
+
+                <p>
+
+                    Understand volatility,
+                    Sharpe ratio, maximum
+                    drawdown and portfolio risk.
+
+                </p>
+
+                <div class="asset-feature-arrow">
+                    →
+                </div>
+
+            </button>
+
+
+            <!-- 4. AI FINANCE TUTOR -->
+
+            <button
+                type="button"
+                class="asset-feature-card"
+                onclick="openFeature('tutor')"
+            >
+
+                <div class="asset-feature-icon">
+                    🤖
+                </div>
+
+                <h2>
+                    AI Finance Tutor
+                </h2>
+
+                <p>
+
+                    Ask questions and learn
+                    difficult financial concepts
+                    using simple explanations.
+
+                </p>
+
+                <div class="asset-feature-arrow">
+                    →
+                </div>
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+/* =========================================================
+   SPLASH SCREEN
+========================================================= */
+
+const splashScreen =
+    document.getElementById(
+        "splashScreen"
+    );
+
+const loginScreen =
+    document.getElementById(
+        "loginScreen"
+    );
+
+
+setTimeout(function () {
+
+    splashScreen.classList.add(
+        "hide"
+    );
+
+
+    setTimeout(function () {
+
+        splashScreen.style.display =
+            "none";
+
+        loginScreen.classList.add(
+            "show"
+        );
+
+
+        setTimeout(function () {
+
+            document
+                .getElementById(
+                    "loginEmail"
+                )
+                .focus();
+
+        }, 300);
+
+    }, 800);
+
+}, 2500);
+
+
+/* =========================================================
+   PASSWORD TOGGLE
+========================================================= */
+
+document
+    .getElementById(
+        "togglePassword"
+    )
+    .addEventListener(
+        "click",
+        function () {
+
+            const password =
+                document.getElementById(
+                    "loginPassword"
+                );
+
+
+            if (
+                password.type ===
+                "password"
+            ) {
+
+                password.type =
+                    "text";
+
+                this.textContent =
+                    "Hide";
+
+            }
+
+            else {
+
+                password.type =
+                    "password";
+
+                this.textContent =
+                    "Show";
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+document
+    .getElementById(
+        "loginForm"
+    )
+    .addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            const email =
+                document
+                    .getElementById(
+                        "loginEmail"
+                    )
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .getElementById(
+                        "loginPassword"
+                    )
+                    .value
+                    .trim();
+
+
+            const error =
+                document.getElementById(
+                    "loginError"
+                );
+
+
+            error.textContent =
+                "";
+
+
+            if (email === "") {
+
+                error.textContent =
+                    "Please enter your email address.";
+
+                return;
+            }
+
+
+            const emailPattern =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+            if (
+                !emailPattern.test(
+                    email
+                )
+            ) {
+
+                error.textContent =
+                    "Please enter a valid email address.";
+
+                return;
+            }
+
+
+            if (password === "") {
+
+                error.textContent =
+                    "Please enter your password.";
+
+                return;
+            }
+
+
+            if (password.length < 4) {
+
+                error.textContent =
+                    "Password must contain at least 4 characters.";
+
+                return;
+            }
+
+            try {
+                let response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                let payload = await response.json();
+
+                if (!response.ok && response.status === 401) {
+                    response = await fetch('/api/auth/signup', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    payload = await response.json();
+                }
+
+                if (!response.ok) {
+                    throw new Error(payload?.error || 'Authentication failed.');
+                }
+
+                localStorage.setItem(
+                    "whatifAuthenticated",
+                    "true"
+                );
+
+                localStorage.setItem(
+                    "whatifUser",
+                    JSON.stringify(
+                        payload?.data?.user ||
+                        { email }
+                    )
+                );
+
+                document.body.classList.remove(
+                    "auth-locked"
+                );
+
+                document.body.classList.add(
+                    "authenticated"
+                );
+
+
+                loginScreen.style.opacity =
+                    "0";
+
+                loginScreen.style.visibility =
+                    "hidden";
+
+                loginScreen.style.pointerEvents =
+                    "none";
+
+
+                setTimeout(function () {
+
+                    loginScreen.style.display =
+                        "none";
+
+                }, 650);
+            } catch (loginError) {
+                error.textContent = loginError.message || 'Unable to sign in right now.';
+            }
+        }
+    );
+
+
+/* =========================================================
+   CURRENT SELECTED ASSET
+========================================================= */
+
+let selectedAsset =
+    "bitcoin";
+
+
+/* =========================================================
+   OPEN ASSET PAGE
+========================================================= */
+
+function openAsset(asset) {
+
+    selectedAsset =
+        asset;
+
+
+    const assetPage =
+        document.getElementById(
+            "assetPage"
+        );
+
+
+    const assetPageName =
+        document.getElementById(
+            "assetPageName"
+        );
+
+
+    const assetPageIcon =
+        document.getElementById(
+            "assetPageIcon"
+        );
+
+
+    const analysisAsset =
+        document.getElementById(
+            "analysisAsset"
+        );
+
+
+    const assetPageDescription =
+        document.getElementById(
+            "assetPageDescription"
+        );
+
+
+    /* =====================================================
+       BITCOIN
+    ===================================================== */
+
+    if (asset === "bitcoin") {
+
+        assetPageName.textContent =
+            "BITCOIN · BTC";
+
+        assetPageIcon.textContent =
+            "₿";
+
+        analysisAsset.textContent =
+            "Bitcoin";
+
+        assetPageDescription.textContent =
+            "Everything you need to explore Bitcoin through market analysis, strategy backtesting, risk analysis and AI-powered financial learning.";
+
+    }
+
+
+    /* =====================================================
+       NVIDIA
+    ===================================================== */
+
+    else if (asset === "nvidia") {
+
+        assetPageName.textContent =
+            "NVIDIA · NVDA";
+
+        assetPageIcon.textContent =
+            "N";
+
+        analysisAsset.textContent =
+            "NVIDIA";
+
+        assetPageDescription.textContent =
+            "Everything you need to explore NVIDIA through market analysis, strategy backtesting, risk analysis and AI-powered financial learning.";
+
+    }
+
+
+    /* =====================================================
+       GOLD
+    ===================================================== */
+
+    else if (asset === "gold") {
+
+        assetPageName.textContent =
+            "GOLD · XAU";
+
+        assetPageIcon.textContent =
+            "Au";
+
+        analysisAsset.textContent =
+            "Gold";
+
+        assetPageDescription.textContent =
+            "Everything you need to explore Gold through market analysis, strategy backtesting, risk analysis and AI-powered financial learning.";
+
+    }
+
+
+    /* SHOW NEW PAGE */
+
+    assetPage.classList.add(
+        "show"
+    );
+
+
+    /* Start page from top */
+
+    assetPage.scrollTop =
+        0;
+
+
+    /* Stop background page scrolling */
+
+    document.body.style.overflow =
+        "hidden";
+
+}
+
+
+/* =========================================================
+   CLOSE ASSET PAGE
+========================================================= */
+
+function closeAssetPage() {
+
+    const assetPage =
+        document.getElementById(
+            "assetPage"
+        );
+
+
+    assetPage.classList.remove(
+        "show"
+    );
+
+
+    document.body.style.overflow =
+        "";
+
+}
+
+
+/* =========================================================
+   FEATURE BUTTONS
+========================================================= */
+
+function openFeature(feature) {
+
+    const pageMap = {
+        analysis: "market-analysis.html",
+        backtesting: "strategy-backtesting.html",
+        risk: "risk-analysis.html",
+        tutor: "ai-finance-tutor.html"
+    };
+
+    const targetPage = pageMap[feature];
+
+    if (!targetPage) {
+        return;
+    }
+
+    localStorage.setItem(
+        "whatifSelectedAsset",
+        selectedAsset
+    );
+
+    const destination =
+        new URL(
+            targetPage,
+            window.location.href
+        );
+
+    destination.searchParams.set(
+        "asset",
+        selectedAsset
+    );
+
+    window.location.href =
+        destination.toString();
+
+}
+
+
+/* =========================================================
+   CARD MOUSE LIGHT
+========================================================= */
+
+document
+    .querySelectorAll(
+        ".asset-card"
+    )
+    .forEach(function (card) {
+
+
+        card.addEventListener(
+            "mousemove",
+            function (event) {
+
+
+                const rect =
+                    card.getBoundingClientRect();
+
+
+                const x =
+                    event.clientX -
+                    rect.left;
+
+
+                const y =
+                    event.clientY -
+                    rect.top;
+
+
+                card.style.background =
+                    `
+                    radial-gradient(
+                        circle at
+                        ${x}px ${y}px,
+                        rgba(255,92,92,0.06),
+                        transparent 40%
+                    ),
+                    linear-gradient(
+                        145deg,
+                        #0b0b0b,
+                        #050505
+                    )
+                    `;
+
+            }
+        );
+
+
+        card.addEventListener(
+            "mouseleave",
+            function () {
+
+                card.style.background =
+                    "linear-gradient(145deg,#0b0b0b,#050505)";
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   ESC KEY — CLOSE ASSET PAGE
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            const assetPage =
+                document.getElementById(
+                    "assetPage"
+                );
+
+
+            if (
+                assetPage.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closeAssetPage();
+
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
