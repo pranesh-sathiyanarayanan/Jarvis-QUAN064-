@@ -1,0 +1,23 @@
+{
+  "users": [
+    {
+      "id": "mu91rw8ghe8fep",
+      "email": "rohithsabari739@gmail.com",
+      "passwordHash": "$2a$12$Gj2GAW.fTeFmJVQAa6XQ5e.NmfcSOpXdbjn.TSmMwd6fXuCL2aQUS",
+      "createdAt": "2026-09-19T23:57:36.880Z"
+    },
+    {
+      "id": "mu920g52qeuf88",
+      "email": "user960d2dc3f60446678e233b5ef26e21d4@example.com",
+      "passwordHash": "$2a$12$4h1pKZ/r7PpIrQeLspzxNO00Foay8naD0gaFN5lDc1ca.B/d7Ncj.",
+      "createdAt": "2026-09-20T00:04:15.926Z"
+    },
+    {
+      "id": "mu93m2k2umt6za",
+      "email": "tharun@gmail.com",
+      "passwordHash": "$2a$12$u6vk6WbXyFuFeuqbaiF79uM3ZumAVEhVVOgR40YycgY3m1aswpL1e",
+      "createdAt": "2026-09-20T00:49:04.370Z"
+    }
+  ],
+  "history": []
+}
