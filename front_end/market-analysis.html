@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatIf — Market Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="feature-pages.css" />
+</head>
+<body class="feature-page">
+  <header class="feature-topbar">
+    <div class="brand-mark">
+      <div class="logo">◆</div>
+      <span>WhatIf</span>
+    </div>
+    <button type="button" class="back-button" id="backToDashboard">Back to Dashboard</button>
+  </header>
+
+  <main class="feature-shell">
+    <section class="feature-hero">
+      <div>
+        <span class="feature-eyebrow">Market intelligence</span>
+        <h1>Market <span>Analysis</span></h1>
+      </div>
+      <p>Review historical market structure across Bitcoin, NVIDIA, and Gold with trend checks, price context, and indicator overlays.</p>
+    </section>
+
+    <section class="feature-panel">
+      <div class="panel-header">
+        <div class="title-group">
+          <h2 id="pageTitle">Bitcoin Market Review</h2>
+        </div>
+        <div class="asset-picker">
+          <label for="assetSelect">Asset</label>
+          <select id="assetSelect">
+            <option value="bitcoin">Bitcoin</option>
+            <option value="nvidia">NVIDIA</option>
+            <option value="gold">Gold</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="control-group">
+          <span>Range</span>
+          <input id="startDate" type="date" />
+        </div>
+        <div class="control-group">
+          <span>To</span>
+          <input id="endDate" type="date" />
+        </div>
+        <div class="control-group">
+          <span>Interval</span>
+          <div class="segmented-buttons">
+            <button class="interval-button active" data-interval="1d" type="button">Daily</button>
+            <button class="interval-button" data-interval="1wk" type="button">Weekly</button>
+            <button class="interval-button" data-interval="1mo" type="button">Monthly</button>
+            <button class="interval-button" data-interval="1y" type="button">Yearly</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Last Close</div>
+          <div class="summary-value" id="lastCloseValue">—</div>
+          <div class="summary-subtext" id="lastCloseDate">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Price Change</div>
+          <div class="summary-value" id="priceChangeValue">—</div>
+          <div class="summary-subtext" id="priceChangeText">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Move Avg 10</div>
+          <div class="summary-value" id="movingAverageValue">—</div>
+          <div class="summary-subtext">Average trend filter</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Trend</div>
+          <div class="summary-value" id="trendValue">—</div>
+          <div class="summary-subtext" id="trendText">—</div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <canvas id="marketChart"></canvas>
+      </div>
+
+      <div class="indicator-grid">
+        <div class="mini-panel">
+          <h3>RSI</h3>
+          <canvas id="rsiChart"></canvas>
+        </div>
+        <div class="mini-panel">
+          <h3>MACD</h3>
+          <canvas id="macdChart"></canvas>
+        </div>
+      </div>
+
+      <div class="data-table-wrap">
+        <h3>Price snapshot</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Open</th>
+              <th>High</th>
+              <th>Low</th>
+              <th>Close</th>
+            </tr>
+          </thead>
+          <tbody id="priceTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="news-panel">
+        <h3>Relevant market commentary</h3>
+        <ul id="marketNewsList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="feature-pages.js"></script>
+  <script>
+    const pageState = {
+      assetKey: getSelectedAssetKey(),
+      interval: '1d',
+      startDate: '',
+      endDate: '',
+      marketChart: null,
+      rsiChart: null,
+      macdChart: null
+    };
+
+    const assetSelect = document.getElementById('assetSelect');
+    const backButton = document.getElementById('backToDashboard');
+
+    backButton.addEventListener('click', () => {
+      window.location.href = 'jarvis8.html';
+    });
+
+    assetSelect.value = pageState.assetKey;
+    assetSelect.addEventListener('change', async () => {
+      pageState.assetKey = assetSelect.value;
+      setSelectedAsset(pageState.assetKey);
+      await updateMarketView();
+    });
+
+    document.querySelectorAll('.interval-button').forEach((button) => {
+      button.addEventListener('click', async () => {
+        document.querySelectorAll('.interval-button').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        pageState.interval = button.dataset.interval;
+        await updateMarketView();
+      });
+    });
+
+    document.getElementById('startDate').addEventListener('change', updateMarketView);
+    document.getElementById('endDate').addEventListener('change', updateMarketView);
+
+    async function updateMarketView() {
+      if (!ensureAuthenticated()) return;
+
+      const startDateInput = document.getElementById('startDate');
+      const endDateInput = document.getElementById('endDate');
+
+      if (!pageState.startDate || !pageState.endDate) {
+        const initialRange = getDateRangeFromPeriod(365);
+        startDateInput.value = initialRange.start;
+        endDateInput.value = initialRange.end;
+        pageState.startDate = initialRange.start;
+        pageState.endDate = initialRange.end;
+      }
+
+      pageState.startDate = startDateInput.value || pageState.startDate;
+      pageState.endDate = endDateInput.value || pageState.endDate;
+
+      const assetMeta = getAssetMeta(pageState.assetKey);
+      document.getElementById('pageTitle').textContent = `${assetMeta.name} Market Review`;
+      document.title = `WhatIf — ${assetMeta.name} Market Analysis`;
+
+      try {
+        const data = await fetchYahooSeries(pageState.assetKey, pageState.interval, pageState.startDate, pageState.endDate);
+
+        const closes = data.map((point) => point.close);
+        const latest = data[data.length - 1];
+        const previous = data[Math.max(0, data.length - 2)];
+        const change = latest.close - previous.close;
+        const percentChange = calculatePercentChange(latest.close, previous.close);
+        const sma10 = calculateSMA(closes, 10).filter((value) => value !== null);
+        const trendText = latest.close >= (sma10[sma10.length - 1] || latest.close) ? 'Bullish structure' : 'Pullback phase';
+        const trendValue = latest.close >= (sma10[sma10.length - 1] || latest.close) ? 'Bullish' : 'Neutral';
+
+        document.getElementById('lastCloseValue').textContent = formatMoney(latest.close);
+        document.getElementById('lastCloseDate').textContent = formatDate(latest.date);
+        document.getElementById('priceChangeValue').textContent = `${change >= 0 ? '+' : ''}${formatMoney(change)}`;
+        document.getElementById('priceChangeText').textContent = `${percentChange >= 0 ? '+' : ''}${formatPercent(percentChange, 2)} vs prior period`;
+        document.getElementById('movingAverageValue').textContent = formatMoney(sma10[sma10.length - 1] || latest.close);
+        document.getElementById('trendValue').textContent = trendValue;
+        document.getElementById('trendText').textContent = trendText;
+
+        const marketCtx = document.getElementById('marketChart');
+        const rsiCtx = document.getElementById('rsiChart');
+        const macdCtx = document.getElementById('macdChart');
+
+        if (pageState.marketChart) pageState.marketChart.destroy();
+        if (pageState.rsiChart) pageState.rsiChart.destroy();
+        if (pageState.macdChart) pageState.macdChart.destroy();
+
+        const priceSeries = data.map((point) => point.close);
+        const smaSeries = calculateSMA(priceSeries, 10);
+        const rsiSeries = calculateRSI(priceSeries, 14);
+        const macd = calculateMACD(priceSeries, 12, 26, 9);
+
+        pageState.marketChart = new Chart(marketCtx, {
+          type: 'line',
+          data: {
+            labels: data.map((point) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(point.date)),
+            datasets: [
+              {
+                label: `${assetMeta.name} Price`,
+                data: priceSeries,
+                borderColor: '#ff5c5c',
+                backgroundColor: 'rgba(255,92,92,0.12)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+              },
+              {
+                label: '10-Day MA',
+                data: smaSeries,
+                borderColor: '#ff9a9a',
+                borderDash: [6, 6],
+                borderWidth: 1.5,
+                fill: false,
+                tension: 0.2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#eaeaea' } } },
+            scales: {
+              x: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+
+        pageState.rsiChart = new Chart(rsiCtx, {
+          type: 'line',
+          data: {
+            labels: data.map((point) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(point.date)),
+            datasets: [{
+              label: 'RSI(14)',
+              data: rsiSeries,
+              borderColor: '#ff5c5c',
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false,
+              tension: 0.2
+            }, {
+              label: '70',
+              data: Array(data.length).fill(70),
+              borderColor: '#f7d26a',
+              borderDash: [4, 4],
+              pointRadius: 0,
+              fill: false
+            }, {
+              label: '30',
+              data: Array(data.length).fill(30),
+              borderColor: '#8ad0ff',
+              borderDash: [4, 4],
+              pointRadius: 0,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#eaeaea' } } },
+            scales: {
+              x: { display: false },
+              y: { min: 0, max: 100, ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+
+        pageState.macdChart = new Chart(macdCtx, {
+          type: 'line',
+          data: {
+            labels: data.map((point) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(point.date)),
+            datasets: [
+              { label: 'MACD', data: macd.macd, borderColor: '#ff5c5c', borderWidth: 2, pointRadius: 0 },
+              { label: 'Signal', data: macd.signal, borderColor: '#7dc8ff', borderWidth: 2, pointRadius: 0 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#eaeaea' } } },
+            scales: {
+              x: { display: false },
+              y: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+
+        const tableBody = document.getElementById('priceTableBody');
+        tableBody.innerHTML = data.slice(-6).reverse().map((point) => `
+          <tr>
+            <td>${formatDate(point.date)}</td>
+            <td>${formatMoney(point.open)}</td>
+            <td>${formatMoney(point.high)}</td>
+            <td>${formatMoney(point.low)}</td>
+            <td>${formatMoney(point.close)}</td>
+          </tr>
+        `).join('');
+
+        const newsList = document.getElementById('marketNewsList');
+        const newsItems = await fetchMarketNews(pageState.assetKey);
+        newsList.innerHTML = newsItems.map((item) => `
+          <li>
+            <span class="news-source">${item.source}</span>
+            <span class="news-title">${item.title}</span>
+          </li>
+        `).join('');
+      } catch (error) {
+        console.error(error);
+        document.getElementById('trendText').textContent = 'Historical fallback loaded';
+      }
+    }
+
+    (async function init() {
+      const initialRange = getDateRangeFromPeriod(365);
+      document.getElementById('startDate').value = initialRange.start;
+      document.getElementById('endDate').value = initialRange.end;
+      pageState.startDate = initialRange.start;
+      pageState.endDate = initialRange.end;
+      await updateMarketView();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatIf — Risk Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="feature-pages.css" />
+</head>
+<body class="feature-page">
+  <header class="feature-topbar">
+    <div class="brand-mark">
+      <div class="logo">◆</div>
+      <span>WhatIf</span>
+    </div>
+    <button type="button" class="back-button" id="backToDashboard">Back to Dashboard</button>
+  </header>
+
+  <main class="feature-shell">
+    <section class="feature-hero">
+      <div>
+        <span class="feature-eyebrow">Risk intelligence</span>
+        <h1>Risk <span>Analysis</span></h1>
+      </div>
+      <p>Measure volatility, drawdowns, and downside risk using historical market behavior. These figures help frame risk, not guarantee future outcomes.</p>
+    </section>
+
+    <section class="feature-panel">
+      <div class="panel-header">
+        <div class="title-group">
+          <h2 id="riskTitle">Risk Review</h2>
+        </div>
+        <div class="asset-picker">
+          <label for="assetSelect">Asset</label>
+          <select id="assetSelect">
+            <option value="bitcoin">Bitcoin</option>
+            <option value="nvidia">NVIDIA</option>
+            <option value="gold">Gold</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="investmentAmount">Investment amount</label>
+          <input id="investmentAmount" type="number" min="1000" step="500" value="25000" />
+        </div>
+        <div class="field">
+          <label for="timeHorizon">Time horizon (years)</label>
+          <input id="timeHorizon" type="number" min="1" max="20" value="3" />
+        </div>
+        <div class="field">
+          <label for="confidenceLevel">Confidence level</label>
+          <select id="confidenceLevel">
+            <option value="95">95%</option>
+            <option value="99">99%</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rangeDays">Historical lookback</label>
+          <select id="rangeDays">
+            <option value="90">90 days</option>
+            <option value="180">180 days</option>
+            <option value="365" selected>1 year</option>
+            <option value="730">2 years</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Historical Volatility</div>
+          <div class="summary-value" id="volatilityValue">—</div>
+          <div class="summary-subtext">Annualized risk level</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Max Drawdown</div>
+          <div class="summary-value" id="drawdownValue">—</div>
+          <div class="summary-subtext">Largest decline from peak</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">VaR</div>
+          <div class="summary-value" id="varValue">—</div>
+          <div class="summary-subtext" id="varConfidenceText">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Expected Return</div>
+          <div class="summary-value" id="expectedReturnValue">—</div>
+          <div class="summary-subtext">Annualized estimate</div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <canvas id="returnsChart"></canvas>
+      </div>
+
+      <div class="risk-grid">
+        <div class="risk-panel">
+          <h3>Asset comparison</h3>
+          <ul class="risk-list" id="assetRiskList"></ul>
+        </div>
+        <div class="risk-panel">
+          <h3>Portfolio allocation</h3>
+          <div class="risk-allocation">
+            <label>
+              Bitcoin %
+              <input id="bitcoinWeight" type="number" min="0" max="100" value="40" />
+            </label>
+            <label>
+              NVIDIA %
+              <input id="nvidiaWeight" type="number" min="0" max="100" value="35" />
+            </label>
+            <label>
+              Gold %
+              <input id="goldWeight" type="number" min="0" max="100" value="25" />
+            </label>
+            <label>
+              Portfolio risk 
+              <input id="portfolioRiskValue" type="text" value="—" readonly />
+            </label>
+          </div>
+          <div class="portfolio-summary">
+            <div class="summary-card">
+              <div class="summary-label">Volatility</div>
+              <div class="summary-value" id="portfolioVolatilityValue">—</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">VaR</div>
+              <div class="summary-value" id="portfolioVarValue">—</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Expected Return</div>
+              <div class="summary-value" id="portfolioReturnValue">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="risk-explanation" id="riskExplanation">
+        Risk analysis is based on historical market data and should be used as an educational estimate. It does not guarantee losses or gains in future periods.
+      </div>
+    </section>
+  </main>
+
+  <script src="feature-pages.js"></script>
+  <script>
+    const assetSelect = document.getElementById('assetSelect');
+    const backButton = document.getElementById('backToDashboard');
+
+    backButton.addEventListener('click', () => {
+      window.location.href = 'jarvis8.html';
+    });
+
+    function getAssetRiskSummary(assetKey, data) {
+      const closes = data.map((point) => point.close);
+      const returns = [];
+      for (let i = 1; i < closes.length; i += 1) {
+        if (closes[i - 1] !== 0) returns.push((closes[i] - closes[i - 1]) / closes[i - 1]);
+      }
+
+      const volatility = calculateVolatility(closes);
+      const maxDrawdown = calculateDrawdown(closes);
+      const confidence = Number(document.getElementById('confidenceLevel').value || 95);
+      const percentileValue = Number((Array.from(returns).sort((a, b) => a - b)[Math.max(0, Math.floor(returns.length * (confidence / 100) - 1))] || 0).toFixed(6));
+      const varValue = Math.abs(percentileValue) * Number(document.getElementById('investmentAmount').value || 10000);
+
+      const expectedReturn = average(returns) * 252 * 100;
+
+      return {
+        volatility,
+        maxDrawdown,
+        varValue,
+        expectedReturn,
+        returns,
+        closeSeries: closes
+      };
+    }
+
+    async function refreshRiskAnalysis() {
+      if (!ensureAuthenticated()) return;
+
+      const assetKey = assetSelect.value;
+      const lookbackDays = Number(document.getElementById('rangeDays').value || 365);
+      const endDate = toInputDate(new Date());
+      const startDate = toInputDate(new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000));
+      const data = await fetchYahooSeries(assetKey, '1d', startDate, endDate);
+      const summary = getAssetRiskSummary(assetKey, data);
+
+      const title = getAssetMeta(assetKey).name;
+      document.getElementById('riskTitle').textContent = `${title} Risk Review`;
+      document.getElementById('volatilityValue').textContent = formatPercent(summary.volatility, 2);
+      document.getElementById('drawdownValue').textContent = formatPercent(summary.maxDrawdown, 2);
+      document.getElementById('varValue').textContent = formatMoney(summary.varValue);
+      document.getElementById('varConfidenceText').textContent = `${document.getElementById('confidenceLevel').value}% confidence`;
+      document.getElementById('expectedReturnValue').textContent = formatPercent(summary.expectedReturn, 2);
+
+      const returnsCanvas = document.getElementById('returnsChart');
+      const existingChart = Chart.getChart(returnsCanvas);
+      if (existingChart) existingChart.destroy();
+
+      new Chart(returnsCanvas, {
+        type: 'line',
+        data: {
+          labels: data.map((point) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(point.date)),
+          datasets: [{
+            label: 'Return history',
+            data: data.map((point, index) => {
+              if (index === 0) return 0;
+              const prev = data[index - 1];
+              return prev.close ? ((point.close - prev.close) / prev.close) * 100 : 0;
+            }),
+            borderColor: '#ff5c5c',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.22
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#eaeaea' } } },
+          scales: {
+            x: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+          }
+        }
+      });
+
+      const assetNames = ['bitcoin', 'nvidia', 'gold'];
+      const comparisonList = document.getElementById('assetRiskList');
+      comparisonList.innerHTML = '';
+
+      const comparisonData = await Promise.all(assetNames.map(async (key) => {
+        const itemData = await fetchYahooSeries(key, '1d', startDate, endDate);
+        return { key, summary: getAssetRiskSummary(key, itemData) };
+      }));
+
+      comparisonData.forEach((entry) => {
+        const item = document.createElement('li');
+        const label = document.createElement('span');
+        label.className = 'risk-tag';
+        label.innerHTML = '<span class="dot"></span>' + getAssetMeta(entry.key).name;
+        const value = document.createElement('strong');
+        value.textContent = `${formatPercent(entry.summary.volatility, 2)} vol`;
+        item.append(label, value);
+        comparisonList.appendChild(item);
+      });
+
+      const weights = {
+        bitcoin: Number(document.getElementById('bitcoinWeight').value || 0),
+        nvidia: Number(document.getElementById('nvidiaWeight').value || 0),
+        gold: Number(document.getElementById('goldWeight').value || 0)
+      };
+
+      const portfolioSeries = {};
+      for (const key of Object.keys(weights)) {
+        const series = await fetchYahooSeries(key, '1d', startDate, endDate);
+        portfolioSeries[key] = series;
+      }
+      const portfolioMetrics = calculatePortfolioMetrics(portfolioSeries, weights);
+      const investmentAmount = Number(document.getElementById('investmentAmount').value || 10000);
+      document.getElementById('portfolioVolatilityValue').textContent = formatPercent(portfolioMetrics.portfolioVolatility, 2);
+      document.getElementById('portfolioVarValue').textContent = formatMoney(investmentAmount * (portfolioMetrics.portfolioVolatility / 100) * 1.645 * 0.01);
+      document.getElementById('portfolioReturnValue').textContent = formatPercent(portfolioMetrics.expectedReturn, 2);
+
+      const explanation = document.getElementById('riskExplanation');
+      explanation.textContent = `This portfolio estimate uses historical return data and a simple covariance model. It assumes past volatility patterns are useful for context, but risk can change quickly with macro conditions, policy moves, and market sentiment. A 95% confidence VaR means roughly 5% of observations historically have been at or beyond this threshold, not a guarantee of future losses.`;
+    }
+
+    [assetSelect, document.getElementById('investmentAmount'), document.getElementById('timeHorizon'), document.getElementById('confidenceLevel'), document.getElementById('rangeDays'), document.getElementById('bitcoinWeight'), document.getElementById('nvidiaWeight'), document.getElementById('goldWeight')].forEach((element) => {
+      element.addEventListener('input', refreshRiskAnalysis);
+      element.addEventListener('change', refreshRiskAnalysis);
+    });
+
+    assetSelect.addEventListener('change', () => {
+      setSelectedAsset(assetSelect.value);
+      refreshRiskAnalysis();
+    });
+
+    (async function init() {
+      if (!ensureAuthenticated()) return;
+      assetSelect.value = getSelectedAssetKey();
+      await refreshRiskAnalysis();
+    })();
+  </script>
+</body>
+</html>

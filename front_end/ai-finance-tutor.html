@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatIf — AI Finance Tutor</title>
+  <link rel="stylesheet" href="feature-pages.css" />
+</head>
+<body class="feature-page">
+  <header class="feature-topbar">
+    <div class="brand-mark">
+      <div class="logo">◆</div>
+      <span>WhatIf</span>
+    </div>
+    <button type="button" class="back-button" id="backToDashboard">Back to Dashboard</button>
+  </header>
+
+  <main class="feature-shell">
+    <section class="feature-hero">
+      <div>
+        <span class="feature-eyebrow">Personal learning</span>
+        <h1>AI Finance <span>Tutor</span></h1>
+      </div>
+      <p>Ask beginner-friendly questions about RSI, MACD, diversification, risk management, and portfolio thinking. Educational explanations are provided here.</p>
+    </section>
+
+    <section class="feature-panel">
+      <div class="chat-shell">
+        <div class="status-pill"><span class="pulse"></span> Educational finance tutor</div>
+        <div class="chat-panel">
+          <h3>Conversation</h3>
+          <div class="chat-list" id="chatHistory">
+            <div class="chat-message bot">Hi — I can explain core finance ideas in simple language. Ask about RSI, MACD, moving averages, diversification, compound interest, drawdowns, or backtesting.</div>
+          </div>
+
+          <div class="suggested-row">
+            <button type="button" class="suggested-question" data-question="What is RSI and how do traders use it?">What is RSI?</button>
+            <button type="button" class="suggested-question" data-question="How does diversification reduce risk?">Diversification</button>
+            <button type="button" class="suggested-question" data-question="What is a moving average crossover?">Moving average crossover</button>
+            <button type="button" class="suggested-question" data-question="Explain compound interest simply.">Compound interest</button>
+            <button type="button" class="suggested-question" data-question="What is backtesting?">Backtesting</button>
+          </div>
+
+          <div class="loading-indicator" id="loadingIndicator">
+            <span class="loader-spinner"></span>
+            <span>Generating explanation...</span>
+          </div>
+
+          <div class="error-banner" id="errorBanner"></div>
+
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" type="text" placeholder="Ask a finance question..." autocomplete="off" />
+            <button type="submit" class="primary-action">Send</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="feature-pages.js"></script>
+  <script>
+    const chatHistory = document.getElementById('chatHistory');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorBanner = document.getElementById('errorBanner');
+    const backButton = document.getElementById('backToDashboard');
+
+    backButton.addEventListener('click', () => {
+      window.location.href = 'jarvis8.html';
+    });
+
+    function addMessage(text, who = 'bot') {
+      const message = document.createElement('div');
+      message.className = `chat-message ${who}`;
+      message.textContent = text;
+      chatHistory.appendChild(message);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function explainFinanceConcept(prompt) {
+      const normalized = String(prompt || '').toLowerCase();
+
+      if (!normalized) {
+        return 'Please ask a finance question and I can explain it in a simple, practical way.';
+      }
+
+      if (normalized.includes('rsi')) {
+        return 'RSI stands for Relative Strength Index. It measures the speed and change of price moves on a 0 to 100 scale. Readings above 70 usually suggest an asset may be overbought, while readings below 30 often suggest it may be oversold. RSI is useful for momentum analysis, but it is not a guarantee that a price will reverse immediately. A strong trend can stay above 70 or below 30 for a while, so traders usually pair RSI with trend analysis or confirmation from price action.';
+      }
+
+      if (normalized.includes('macd')) {
+        return 'MACD is the Moving Average Convergence Divergence indicator. It compares a short-term moving average to a longer-term one. When the MACD line crosses above its signal line, it often signals stronger momentum. When it crosses below, momentum may be weakening. MACD helps identify trend direction and momentum shifts, but it is best used with context, not as a stand-alone buy or sell rule.';
+      }
+
+      if (normalized.includes('moving average') || normalized.includes('crossover') || normalized.includes('ma ')) {
+        return 'A moving average smooths price data so you can see the direction of the trend more clearly. A short-term moving average reacts faster, while a long-term moving average reacts more slowly. A crossover occurs when the faster average moves above or below the slower one. This can signal a trend change or a momentum shift, but it works best when combined with other checks such as volume, market context, and risk management.';
+      }
+
+      if (normalized.includes('divers') || normalized.includes('portfolio') || normalized.includes('allocation') || normalized.includes('asset allocation')) {
+        return 'Diversification means spreading investments across different assets, sectors, or strategies instead of putting everything in one place. The goal is to reduce the impact of any single asset performing badly. Diversification cannot eliminate risk entirely, but it can lower the chance that one sharp move damages the whole portfolio. A balanced portfolio usually mixes assets with different drivers, such as equities, bonds, gold, or other defensive holdings.';
+      }
+
+      if (normalized.includes('interest rate') || normalized.includes('fed') || normalized.includes('central bank') || normalized.includes('rate cut') || normalized.includes('rate hike')) {
+        return 'Interest rates are the cost of borrowing money and the return on saving or lending funds. Central banks often adjust rates to influence inflation, growth, and financial stability. Higher rates can slow borrowing and investment, while lower rates can stimulate activity, but they also affect asset valuation and bond returns.';
+      }
+
+      if (normalized.includes('compound') || normalized.includes('interest') || normalized.includes('time value') || normalized.includes('future value') || normalized.includes('present value')) {
+        return 'Compound interest means earning returns on both your original money and the gains that have already been added. Over time, this creates exponential growth because each cycle adds more value. The longer the time horizon, the more powerful compounding becomes. This is why starting early and staying invested often matters more than trying to time the market perfectly.';
+      }
+
+      if (normalized.includes('backtest') || normalized.includes('backtesting')) {
+        return 'Backtesting means testing a trading or investing rule against historical data to see how it would have behaved in the past. It is useful for learning whether a strategy is logically sound and whether it tends to work across different market conditions. However, backtest results are not guarantees for future results because market conditions, costs, and behavior change over time. Good backtests should be realistic and include risk limits, transaction costs, and clear decision rules.';
+      }
+
+      if (normalized.includes('risk') || normalized.includes('drawdown') || normalized.includes('volatility') || normalized.includes('beta') || normalized.includes('variance')) {
+        return 'Risk is the chance that an investment moves against you. Volatility measures how much prices swing over time, while drawdown measures how much value falls from a recent peak. In practical terms, risk management means sizing positions carefully, understanding loss potential, and avoiding the temptation to assume every large gain comes without danger. Smart investors focus on both returns and the risk needed to achieve them.';
+      }
+
+      if (normalized.includes('var') || normalized.includes('value at risk')) {
+        return 'Value at Risk, or VaR, estimates how much a portfolio could lose over a chosen time period under normal market conditions at a given confidence level. For example, a 95% daily VaR asks: what is the likely worst daily loss in 95 out of 100 normal days? VaR is a useful risk summary, but it does not capture every possible extreme event and should be used alongside other risk checks like drawdown and scenario analysis.';
+      }
+
+      if (normalized.includes('bitcoin') || normalized.includes('crypto') || normalized.includes('cryptocurrency')) {
+        return 'Bitcoin is a digital asset that can be highly volatile compared with traditional assets. Its price is influenced by adoption, regulation, market sentiment, liquidity, and macroeconomic conditions. Bitcoin may offer growth potential, but it also carries significant price swings and risk. In a portfolio, it is often used as a smaller allocation rather than as the only investment because risk management matters.';
+      }
+
+      if (normalized.includes('gold') || normalized.includes('commodity')) {
+        return 'Gold is often treated as a diversifier and a hedge against inflation or uncertain markets. It can behave differently from stocks because it reacts to interest rates, inflation expectations, and global uncertainty. Gold can play a useful role in diversification, but it is not always the highest-return asset in the short term. It is often valued for balance and stability in a broader portfolio.';
+      }
+
+      if (normalized.includes('nvidia') || normalized.includes('stock') || normalized.includes('equity') || normalized.includes('earnings') || normalized.includes('valuation') || normalized.includes('pe ratio')) {
+        return 'When evaluating a stock, it helps to look at the business, its earnings, valuation, and the market environment. Price alone does not prove quality or future returns. Investors usually combine fundamental checks such as revenue growth, margins, debt, and cash flow with chart context and risk management before making a decision.';
+      }
+
+      if (normalized.includes('inflation') || normalized.includes('cpi') || normalized.includes('consumer price')) {
+        return 'Inflation means prices are rising over time, which reduces the purchasing power of money. It matters because it influences interest rates, wages, bond yields, and asset prices. Investors often care about inflation because it can increase costs, pressure margins, and change the real return on investments after adjusting for price increases.';
+      }
+
+      if (normalized.includes('interest rate') || normalized.includes('fed') || normalized.includes('central bank') || normalized.includes('rate cut') || normalized.includes('rate hike')) {
+        return 'Interest rates are the cost of borrowing money and the return on saving or lending funds. Central banks often adjust rates to influence inflation, growth, and financial stability. Higher rates can slow borrowing and investment, while lower rates can stimulate activity, but they also affect asset valuation and bond returns.';
+      }
+
+      if (normalized.includes('bond') || normalized.includes('yield') || normalized.includes('treasury')) {
+        return 'Bonds are loans made to governments or companies, and they typically pay interest over time. Bond yields reflect the return investors receive relative to the price paid. When yields rise, bond prices usually fall, and vice versa. Bonds can provide income and reduce overall portfolio volatility, though they do carry interest-rate risk.';
+      }
+
+      if (normalized.includes('etf') || normalized.includes('mutual fund') || normalized.includes('fund')) {
+        return 'ETFs and mutual funds pool many investors\' money into a diversified basket of securities. This makes them a simple way to access markets without selecting individual stocks one by one. The main tradeoff is that broader diversification can reduce concentration risk, but it can also limit upside if one opportunity stands out dramatically.';
+      }
+
+      if (normalized.includes('cash flow') || normalized.includes('income statement') || normalized.includes('balance sheet') || normalized.includes('profit margin')) {
+        return 'Cash flow shows how money moves in and out of a business, while profit margins show how efficiently it converts sales into profit. A company with strong cash flow and healthy margins is often better positioned to invest, manage debt, and weather downturns. Financial statements are useful because they reveal operational quality rather than only headline stock price movements.';
+      }
+
+      if (normalized.includes('recession') || normalized.includes('gdp') || normalized.includes('economy') || normalized.includes('macro')) {
+        return 'Macro analysis looks at the bigger economic picture, including GDP, employment, inflation, rates, and consumer spending. These factors can influence market sentiment and valuations across sectors. In a recession, risk assets often become more volatile, while defensive sectors and high-quality balance sheets can become more attractive.';
+      }
+
+      if (normalized.includes('what is') || normalized.includes('explain') || normalized.includes('how does') || normalized.includes('why') || normalized.includes('what are')) {
+        return 'A strong finance answer usually defines the concept, explains how it is measured, describes what it tells you, and notes its limits. In investing, the point is not to chase one number blindly, but to understand the relationship between risk, return, time, and market conditions before making decisions.';
+      }
+
+      return 'Finance is about understanding how money grows, how risk is managed, and how markets price uncertainty. A solid answer usually begins with the core concept, shows how it is measured, and then explains the tradeoff it creates. In practice, good financial thinking balances return, risk, time horizon, and diversification instead of relying on a single signal or headline.';
+    }
+
+    async function handleTutorRequest(message) {
+      try {
+        const response = await fetch('/api/finance-tutor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: message })
+        });
+
+        if (!response.ok) {
+          throw new Error('Service unavailable');
+        }
+
+        const payload = await response.json();
+        const answer = payload?.data?.answer ?? payload?.answer ?? null;
+        return answer || 'The AI service did not return a usable answer.';
+      } catch (error) {
+        return explainFinanceConcept(message);
+      }
+    }
+
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!ensureAuthenticated()) return;
+
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, 'user');
+      chatInput.value = '';
+      errorBanner.classList.remove('show');
+      errorBanner.textContent = '';
+      loadingIndicator.classList.add('show');
+
+      try {
+        const answer = await handleTutorRequest(message);
+        addMessage(answer, 'bot');
+      } catch (error) {
+        const fallback = explainFinanceConcept(message);
+        errorBanner.textContent = '';
+        errorBanner.classList.remove('show');
+        addMessage(fallback, 'bot');
+      } finally {
+        loadingIndicator.classList.remove('show');
+      }
+    });
+
+    document.querySelectorAll('.suggested-question').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const question = button.dataset.question || button.textContent;
+        chatInput.value = question;
+        chatForm.requestSubmit();
+      });
+    });
+
+    (function init() {
+      if (!ensureAuthenticated()) return;
+      const initial = 'What is diversification and why does it matter?';
+      addMessage('This tutor is designed for educational explanations. If you want a live AI service, set up a backend endpoint and secure environment variables before production use.', 'bot');
+      chatInput.value = initial;
+    })();
+  </script>
+</body>
+</html>

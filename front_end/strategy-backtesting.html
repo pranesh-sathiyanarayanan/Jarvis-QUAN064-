@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatIf — Strategy Backtesting</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="feature-pages.css" />
+</head>
+<body class="feature-page">
+  <header class="feature-topbar">
+    <div class="brand-mark">
+      <div class="logo">◆</div>
+      <span>WhatIf</span>
+    </div>
+    <button type="button" class="back-button" id="backToDashboard">Back to Dashboard</button>
+  </header>
+
+  <main class="feature-shell">
+    <section class="feature-hero">
+      <div>
+        <span class="feature-eyebrow">Quant strategy testing</span>
+        <h1>Strategy <span>Backtesting</span></h1>
+      </div>
+      <p>Test how different rules would have performed historically using real price history. These results are educational and not future guarantees.</p>
+    </section>
+
+    <section class="feature-panel">
+      <div class="panel-header">
+        <div class="title-group">
+          <h2>Historical Backtest</h2>
+        </div>
+        <div class="asset-picker">
+          <label for="assetSelect">Asset</label>
+          <select id="assetSelect">
+            <option value="bitcoin">Bitcoin</option>
+            <option value="nvidia">NVIDIA</option>
+            <option value="gold">Gold</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="startingInvestment">Starting investment</label>
+          <input id="startingInvestment" type="number" min="1000" step="100" value="10000" />
+        </div>
+        <div class="field">
+          <label for="strategySelect">Strategy</label>
+          <select id="strategySelect">
+            <option value="buy-hold">Buy and Hold</option>
+            <option value="ma-crossover">Moving Average Crossover</option>
+            <option value="rsi-breakout">RSI-based Strategy</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="startDate">Start date</label>
+          <input id="startDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="endDate">End date</label>
+          <input id="endDate" type="date" />
+        </div>
+      </div>
+
+      <div class="parameter-grid" style="margin-bottom: 18px;">
+        <label>
+          Fast MA
+          <input id="fastPeriod" type="number" min="2" max="50" value="10" />
+        </label>
+        <label>
+          Slow MA
+          <input id="slowPeriod" type="number" min="5" max="200" value="30" />
+        </label>
+        <label>
+          RSI Period
+          <input id="rsiPeriod" type="number" min="5" max="30" value="14" />
+        </label>
+        <label>
+          RSI Oversold / Overbought
+          <input id="rsiThresholds" type="text" value="30,70" />
+        </label>
+      </div>
+
+      <div class="inline-actions">
+        <button type="button" class="secondary-action" id="resetButton">Reset</button>
+        <button type="button" class="primary-action" id="runBacktest">Run Backtest</button>
+      </div>
+
+      <div class="backtest-results">
+        <h3>Backtest output</h3>
+        <div class="backtest-grid">
+          <div class="summary-card">
+            <div class="summary-label">Final Portfolio</div>
+            <div class="summary-value" id="finalPortfolioValue">—</div>
+            <div class="summary-subtext" id="finalPortfolioText">—</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Total Return</div>
+            <div class="summary-value" id="totalReturnValue">—</div>
+            <div class="summary-subtext">Strategy performance</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Max Drawdown</div>
+            <div class="summary-value" id="maxDrawdownValue">—</div>
+            <div class="summary-subtext">Largest historical decline</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Trades</div>
+            <div class="summary-value" id="tradeCountValue">—</div>
+            <div class="summary-subtext" id="tradeSummaryText">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-panel" style="margin-top: 22px;">
+        <canvas id="backtestChart"></canvas>
+      </div>
+
+      <div class="risk-panel">
+        <h3>Strategy vs buy and hold</h3>
+        <ul class="comparison-list">
+          <li><span>Selected strategy</span><strong id="strategyResult">—</strong></li>
+          <li><span>Buy and hold</span><strong id="buyHoldResult">—</strong></li>
+          <li><span>Win / loss trades</span><strong id="winLossResult">—</strong></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="feature-pages.js"></script>
+  <script>
+    const assetSelect = document.getElementById('assetSelect');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const strategySelect = document.getElementById('strategySelect');
+    const runButton = document.getElementById('runBacktest');
+    const resetButton = document.getElementById('resetButton');
+    const backButton = document.getElementById('backToDashboard');
+
+    backButton.addEventListener('click', () => window.location.href = 'jarvis8.html');
+
+    function setDefaultRange() {
+      const range = getDateRangeFromPeriod(365);
+      startDateInput.value = range.start;
+      endDateInput.value = range.end;
+    }
+
+    function getStrategyInputs() {
+      const thresholds = document.getElementById('rsiThresholds').value.split(',').map((item) => Number(item.trim()));
+      return {
+        startingInvestment: Number(document.getElementById('startingInvestment').value || 10000),
+        fastPeriod: Number(document.getElementById('fastPeriod').value || 10),
+        slowPeriod: Number(document.getElementById('slowPeriod').value || 30),
+        rsiPeriod: Number(document.getElementById('rsiPeriod').value || 14),
+        rsiOversold: thresholds[0] || 30,
+        rsiOverbought: thresholds[1] || 70,
+        strategy: strategySelect.value
+      };
+    }
+
+    function evaluateStrategy(series, strategyType, params) {
+      const closes = series.map((point) => point.close);
+      const smaFast = calculateSMA(closes, params.fastPeriod);
+      const smaSlow = calculateSMA(closes, params.slowPeriod);
+      const rsiSeries = calculateRSI(closes, params.rsiPeriod);
+
+      let cash = params.startingInvestment;
+      let position = 0;
+      let tradeHistory = [];
+      let winnings = 0;
+      let losses = 0;
+      let equitySeries = [];
+      let peakValue = params.startingInvestment;
+      let maxDrawdown = 0;
+
+      const buyAt = (price, index) => {
+        if (position <= 0) {
+          position = cash / price;
+          cash = 0;
+          tradeHistory.push({ entryIndex: index, entryPrice: price, type: 'buy' });
+        }
+      };
+
+      const sellAt = (price, index) => {
+        if (position > 0) {
+          const units = position;
+          const entryTrade = tradeHistory[tradeHistory.length - 1];
+          const pnl = (price - (entryTrade?.entryPrice || price)) * units;
+          if (pnl > 0) winnings += 1; else losses += 1;
+          cash = units * price;
+          position = 0;
+          tradeHistory.push({ exitIndex: index, exitPrice: price, pnl });
+        }
+      };
+
+      for (let i = 0; i < series.length; i += 1) {
+        const price = closes[i];
+        const shortAvg = smaFast[i];
+        const longAvg = smaSlow[i];
+        const rsi = rsiSeries[i] ?? 50;
+        const value = cash + position * price;
+        equitySeries.push({ date: series[i].date, value });
+
+        if (value > peakValue) peakValue = value;
+        const drawdown = ((peakValue - value) / peakValue) * 100;
+        if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+
+        if (strategyType === 'buy-hold') {
+          if (i === 0) {
+            buyAt(price, i);
+          }
+          continue;
+        }
+
+        if (strategyType === 'ma-crossover') {
+          const fastReady = shortAvg != null && longAvg != null;
+          if (fastReady) {
+            if (shortAvg > longAvg && position <= 0) {
+              buyAt(price, i);
+            } else if (shortAvg < longAvg && position > 0) {
+              sellAt(price, i);
+            }
+          }
+        }
+
+        if (strategyType === 'rsi-breakout') {
+          if (rsi < params.rsiOversold && position <= 0) {
+            buyAt(price, i);
+          } else if (rsi > params.rsiOverbought && position > 0) {
+            sellAt(price, i);
+          }
+        }
+      }
+
+      if (strategyType === 'buy-hold') {
+        const units = params.startingInvestment / closes[0];
+        const finalValue = units * closes[closes.length - 1];
+        return {
+          finalValue,
+          returnPct: ((finalValue - params.startingInvestment) / params.startingInvestment) * 100,
+          maxDrawdown: calculateDrawdown(closes),
+          tradeCount: 1,
+          winningTrades: 1,
+          losingTrades: 0,
+          equitySeries: series.map((point, index) => ({ date: point.date, value: (params.startingInvestment / closes[0]) * closes[index] }))
+        };
+      }
+
+      const finalValue = cash + position * closes[closes.length - 1];
+      return {
+        finalValue,
+        returnPct: ((finalValue - params.startingInvestment) / params.startingInvestment) * 100,
+        maxDrawdown,
+        tradeCount: Math.max(0, tradeHistory.filter((item) => item.exitIndex != null).length),
+        winningTrades: winnings,
+        losingTrades: losses,
+        equitySeries
+      };
+    }
+
+    async function runBacktest() {
+      if (!ensureAuthenticated()) return;
+
+      const strategy = strategySelect.value;
+      const params = getStrategyInputs();
+      const assetKey = assetSelect.value;
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+      const interval = '1d';
+
+      try {
+        const series = await fetchYahooSeries(assetKey, interval, startDate, endDate);
+        const strategyResult = evaluateStrategy(series, strategy, params);
+        const buyHoldResult = evaluateStrategy(series, 'buy-hold', params);
+
+        const finalPortfolioValue = document.getElementById('finalPortfolioValue');
+        const finalPortfolioText = document.getElementById('finalPortfolioText');
+        const totalReturnValue = document.getElementById('totalReturnValue');
+        const maxDrawdownValue = document.getElementById('maxDrawdownValue');
+        const tradeCountValue = document.getElementById('tradeCountValue');
+        const tradeSummaryText = document.getElementById('tradeSummaryText');
+        const strategyResultElem = document.getElementById('strategyResult');
+        const buyHoldResultElem = document.getElementById('buyHoldResult');
+        const winLossResult = document.getElementById('winLossResult');
+
+        finalPortfolioValue.textContent = formatMoney(strategyResult.finalValue);
+        finalPortfolioText.textContent = `${strategy === 'buy-hold' ? 'Buy & hold' : 'Signal-based'} strategy`;
+        totalReturnValue.textContent = formatPercent(strategyResult.returnPct, 2);
+        maxDrawdownValue.textContent = formatPercent(strategyResult.maxDrawdown, 2);
+        tradeCountValue.textContent = String(strategyResult.tradeCount);
+        tradeSummaryText.textContent = `${strategyResult.winningTrades} winners / ${strategyResult.losingTrades} losers`;
+        strategyResultElem.textContent = `${formatPercent(strategyResult.returnPct, 2)} return`;
+        buyHoldResultElem.textContent = `${formatPercent(buyHoldResult.returnPct, 2)} return`;
+        winLossResult.textContent = `${strategyResult.winningTrades} / ${strategyResult.losingTrades}`;
+
+        const chartCtx = document.getElementById('backtestChart');
+        const existingChart = Chart.getChart(chartCtx);
+        if (existingChart) existingChart.destroy();
+
+        new Chart(chartCtx, {
+          type: 'line',
+          data: {
+            labels: strategyResult.equitySeries.map((point) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(point.date)),
+            datasets: [
+              {
+                label: 'Strategy',
+                data: strategyResult.equitySeries.map((point) => point.value),
+                borderColor: '#ff5c5c',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.25
+              },
+              {
+                label: 'Buy & Hold',
+                data: buyHoldResult.equitySeries.map((point) => point.value),
+                borderColor: '#8ec5ff',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.25
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#eaeaea' } } },
+            scales: {
+              x: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#9a9a9a' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
+          }
+        });
+      } catch (error) {
+        console.error(error);
+        document.getElementById('finalPortfolioText').textContent = 'Historical sample available';
+      }
+    }
+
+    assetSelect.addEventListener('change', () => {
+      setSelectedAsset(assetSelect.value);
+    });
+
+    resetButton.addEventListener('click', () => {
+      setDefaultRange();
+      strategySelect.value = 'buy-hold';
+      document.getElementById('startingInvestment').value = 10000;
+      document.getElementById('fastPeriod').value = 10;
+      document.getElementById('slowPeriod').value = 30;
+      document.getElementById('rsiPeriod').value = 14;
+      document.getElementById('rsiThresholds').value = '30,70';
+    });
+
+    runButton.addEventListener('click', runBacktest);
+
+    (function init() {
+      if (!ensureAuthenticated()) return;
+      assetSelect.value = getSelectedAssetKey();
+      setDefaultRange();
+      runBacktest();
+    })();
+  </script>
+</body>
+</html>
